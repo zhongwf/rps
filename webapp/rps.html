@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>石头剪子布</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body style="text-align: center;">
+<h2>石头剪子布</h2>
+<!--
+<img id="selected-image" src="./test_r.jpg" width="200px">
+-->
+<!--video用于显示媒体设备的视频流，自动播放-->
+<video id="video" autoplay style="display: none;visibility: hidden;width: 200px;height: 200px;-moz-transform: scaleX(-1);-o-transform: scaleX(-1);-webkit-transform: scaleX(-1);transform: scaleX(-1); "></video>
+
+    
+
+
+<!--拍照按钮
+<div>
+<button id="capture">拍照*10</button>
+
+</div>
+-->
+<!--描绘video截图-->
+<canvas id="canvas" width="256" height="256" style="display: none;visibility: hidden;"></canvas>
+
+
+
+
+
+<canvas id="canvasPure" width="128" height="128" style="-moz-transform: scaleX(-1);-o-transform: scaleX(-1);-webkit-transform: scaleX(-1);transform: scaleX(-1); "></canvas>
+<br/>
+<a id="result" style="font-size: large; padding: 50px;" >正在加载数据(约16M)</a>
+<br/>
+<img id="imgshow" width="200px" src="./img/room.png" />
+<script type="text/javascript" src="https://code.jquery.com/jquery-1.6.js"></script>
+
+
+<script type="text/javascript">
+
+
+//访问用户媒体设备的兼容方法
+function getUserMedia(constrains,success,error){
+    if(navigator.mediaDevices.getUserMedia){
+        //最新标准API
+        navigator.mediaDevices.getUserMedia(constrains).then(success).catch(error);
+    } else if (navigator.webkitGetUserMedia){
+        //webkit内核浏览器
+        navigator.webkitGetUserMedia(constrains).then(success).catch(error);
+    } else if (navigator.mozGetUserMedia){
+        //Firefox浏览器
+        navagator.mozGetUserMedia(constrains).then(success).catch(error);
+    } else if (navigator.getUserMedia){
+        //旧版API
+        navigator.getUserMedia(constrains).then(success).catch(error);
+    }
+}
+
+var video = document.getElementById("video");
+var canvas = document.getElementById("canvas");
+var context = canvas.getContext("2d");
+
+var canvasPure = document.getElementById("canvasPure");
+var contextPure = canvasPure.getContext("2d"); 
+
+
+//成功的回调函数
+function success(stream){
+    //兼容webkit内核浏览器
+    var CompatibleURL = window.URL || window.webkitURL;
+    //将视频流设置为video元素的源
+    video.src = CompatibleURL.createObjectURL(stream);
+    //播放视频
+    video.play();
+}
+
+//异常的回调函数
+function error(error){
+    console.log("访问用户媒体设备失败：",error.name,error.message);
+}
+if (navigator.mediaDevices.getUserMedia || navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia){
+    //调用用户媒体设备，访问摄像头
+    getUserMedia({
+        video:{width:200,height:200}
+    },success,error);
+} else {
+    alert("你的浏览器不支持访问用户媒体设备");
+}
+
+//注册拍照按钮的单击事件
+document.getElementById("capture").addEventListener("click",async function(){
+    snapshootAndPredict();
+
+    // for (var i = 0; i < 20; i++) {
+      
+    //   await sleep(1500);
+    // }
+
+});
+
+function startx(){
+      // if("正在加载数据(约16M)请稍候..." == $("#result").html()){
+      //   $("#result").val("请将手移入识别框内");
+      // }
+      console.log("startx")
+      snapshootAndPredict();  
+}
+
+function sleep (time) {
+  return new Promise((resolve) => setTimeout(resolve, time));
+}
+
+// 用法
+sleep(500).then(() => {
+    // 这里写sleep之后需要去做的事情
+})
+
+async function snapshootAndPredict(){
+      //绘制画面
+    context.drawImage(video,0,0,256,256);  
+
+    var dataImgPure = context.getImageData(64,64,128,128)
+    contextPure.putImageData(dataImgPure,0,0,0,0,128,128);
+
+    //console.log(tfmodel);
+    //console.log(video);
+
+    const img = document.getElementById('canvasPure');
+    
+    image = tf.fromPixels(img);
+    //console.log(1);
+    //console.log(image);
+    image = tf.image.resizeBilinear(image, [128, 128]).toFloat() 
+
+
+    //console.log(image);
+
+    console.log(typeof(image));
+    console.log(image);
+    //image = image / 256;
+    image = image.div(tf.scalar(255))
+    console.log(typeof(image));
+    console.log(image);
+
+    let tensor   = image.expandDims(null); 
+    //console.log(tensor);
+    //console.log(tensor); 
+    let prediction = await tfmodel.predict(tensor).data();
+
+    result = null;
+    console.log("prediction");
+
+    pos = 0;
+    max = 0;
+    for(i = 0 ;i < 4; i++){
+      if(max < prediction[i]){
+        pos = i;
+        max = prediction[i];
+      }
+    }
+    console.log("pos:" + pos);
+    if(pos == 0){
+      result = "石头";
+      $("#imgshow").attr("src","img/rock.png");
+    }else if(pos == 1){
+      result = "布";
+      $("#imgshow").attr("src","img/paper.png");
+    }else if(pos == 2){
+      result = "剪子";
+      $("#imgshow").attr("src","img/scissors.png");
+    }else if(pos == 3){
+      result = "请将手移入识别框内";
+      $("#imgshow").attr("src","img/room.png");
+    }
+    $("#result").html(result)
+
+    requestAnimationFrame(snapshootAndPredict);
+    console.log(prediction);
+}
+
+
+</script>
+
+<!-- <script src="https://unpkg.com/keras-js@1.0.2"></script>
+<script type="text/javascript">
+const kerasModel = new KerasJS.Model({
+  filepath: './model_venus.model',
+  //filesystem: true,
+  //gpu: true
+})    
+</script> -->
+
+
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"> </script>
+<!--
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@0.12."> </script>  
+-->
+    <!-- Place your code in the script tag below. You can also use an external .js file -->
+    <script>
+var tfmodel; 
+async function load(){
+
+      //$("#result").html("正在加载数据(约16M)请稍候...")
+      tfmodel = await tf.loadModel('./model/model.json');
+      startx();
+
+}
+
+load();
+    </script>
+</body>
+</html>
