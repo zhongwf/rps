@@ -2,7 +2,7 @@
 
 在了解到深度学习(DNN)有卷积神经网络(CNN）和循环神经网络(RNN）两种典型的网络之后，我在想能用深度学习做个什么应用练练手呢？然后发散思维想了几个应用场景，比如古董珠宝识别鉴定、石头剪子布手势识别等。后来觉得石头剪子布手势识别是可以落地的，于是就动手做起来。俩礼拜后应用做出来了，效果非常好，如动图所示。
 
-![](http://s-blog.oss-cn-beijing.aliyuncs.com/724a0720-3040-46ee-be45-b0b85f0cd5ec.gif)
+![](./webapp/img/intro.gif)
 
 因为项目基本是基于开源程序完成的，所以我也把完成的项目开源到Github了，[项目链接]()。
 下载代码后，切换到代码目录运行：
@@ -27,13 +27,13 @@
 
 在训练测试过程中，发现核对数据非常麻烦，需要打开图片对着训练结果表格才知道对不对。因此为了方便测试，批量地把图片全部命名成"类别+序号.jpg"。
 
-![](http://s-blog.oss-cn-beijing.aliyuncs.com/dc490908-62a4-491f-aff3-7446da3e427f.png)
+![](./webapp/img/01.png)
 
-![](http://s-blog.oss-cn-beijing.aliyuncs.com/56765673-d6c5-40cc-9998-58904f736dfc.png)
+![](./webapp/img/02.png)
 
-![](http://s-blog.oss-cn-beijing.aliyuncs.com/ebaf4d15-97f9-48e9-9535-79ef3c77d510.png)
+![](./webapp/img/03.png)
 
-![](http://s-blog.oss-cn-beijing.aliyuncs.com/fd74595a-35a8-4e8f-a874-6058c7385984.png)
+![](./webapp/img/04.png)
 
 
 ### 训练模型
